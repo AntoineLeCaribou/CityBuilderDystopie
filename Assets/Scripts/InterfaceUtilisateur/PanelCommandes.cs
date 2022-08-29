@@ -19,7 +19,6 @@ public class PanelCommandes : MonoBehaviour
 
     public void Ok()
     {
-        //panel.SetActive(false);
         animator.SetTrigger("Fermer");
     }
 

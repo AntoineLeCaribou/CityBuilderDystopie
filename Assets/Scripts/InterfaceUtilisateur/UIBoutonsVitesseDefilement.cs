@@ -30,6 +30,8 @@ public class UIBoutonsVitesseDefilement : MonoBehaviour
             listeBoutons[i].GetComponent<Button>().onClick.AddListener(() => ActiverBoutons(tempInt));
         }
 
+        listeBoutons[3].GetComponent<Button>().onClick.AddListener(() => DesactiverBoutons());
+
         ActiverBoutons(etat);
     }
 

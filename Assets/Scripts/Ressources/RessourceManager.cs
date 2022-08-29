@@ -32,9 +32,6 @@ public class RessourceManager : MonoBehaviour
     {
         this.argent -= argent;
 
-        if (this.argent < 0)
-            this.argent = 0;
-
         uiRessourceManager.UpdateCompteurArgent(this.argent);
     }
 
