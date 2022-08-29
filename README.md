@@ -1,8 +1,8 @@
 # CityBuilderDystopie
 Un jeu de construction de villes sur Unity (version 2022.1.6f1)
 
-## Voici une capture d'écran qui donne une idée de la tête du jeu :
-![Screenshot de la tête du jeu](https://user-images.githubusercontent.com/94169260/187042144-915b2ace-2bf1-4097-ac7e-df5423738d00.png)
+### Chaque partie commence par un terrain généré procéduralement (grâce au perlin noise) :
+![Image](https://user-images.githubusercontent.com/94169260/187154603-4c8bab7f-89f1-470f-87c3-d205da12d5b7.png)
 
-## Possibilité de souscrire à des crédits
-![Les credits](https://user-images.githubusercontent.com/94169260/187052767-6470707d-32a5-450c-98e6-d82023d7f0dd.png)
+### Le même terrain après quelques aménagements
+![Image](https://user-images.githubusercontent.com/94169260/187155541-e27468a8-f574-4728-8ddc-ac5504a925b4.png)
