@@ -5,7 +5,7 @@ using UnityEngine;
 public class Credit : MonoBehaviour
 {
 
-    public UICredit uiCredit;
+    private UICredit uiCredit;
     public RessourceManager ressourceManager;
 
     private float minimumCredit = 1000;
@@ -30,14 +30,27 @@ public class Credit : MonoBehaviour
 
     public void Start()
     {
+        uiCredit = GetComponent<UICredit>();
         Init();
     }
 
     private void Init()
     {
-        uiCredit.InitCapital(true, capital, minimumCredit, maximumCredit);
-        uiCredit.InitMois(true, dureeDuCreditEnMois, minimumMois, maximumMois);
+        VerifierSiTropDeCredits();
+        uiCredit.InitCapital(false, capital, minimumCredit, maximumCredit);
+        uiCredit.InitMois(false, minimumMois, minimumMois, maximumMois);
         MettreAJourCredit();
+    }
+
+    public void VerifierSiTropDeCredits()
+    {
+        if (nbCreditEnCours >= nbCreditMax)
+        {
+            uiCredit.SetLimiteCredit();
+            return;
+        }
+
+        uiCredit.SetFenetreFaireUnCredit();
     }
 
     public void MettreAJourCredit()
@@ -58,7 +71,7 @@ public class Credit : MonoBehaviour
         uiCredit.InitPourcentageSupplementaire(marge, margeEnPourcentage);
         uiCredit.InitRemboursement(sommeTotaleARembourser, sommeARembourserParMois);
 
-        bool tropDeCredits = (nbCreditEnCours >= nbCreditMax) || (ressourceManager.GetArgent() < fraisDeDossier);
+        bool tropDeCredits = ressourceManager.GetArgent() < fraisDeDossier;
         uiCredit.InitBoutonSouscription(fraisDeDossier, tropDeCredits);
     }
 
@@ -73,5 +86,7 @@ public class Credit : MonoBehaviour
 
         ressourceManager.RetirerArgent(fraisDeDossier);
         ressourceManager.AjouterArgent(capital);
+
+        VerifierSiTropDeCredits();
     }
 }

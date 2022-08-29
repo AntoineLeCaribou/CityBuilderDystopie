@@ -17,7 +17,7 @@ public class PanelCommandes : MonoBehaviour
 
     public void PasOk()
     {
-        boutonPasOk.interactable = false;
+        boutonPasOk.gameObject.SetActive(false);
         EasterEgg.SetActive(true);
     }
 }

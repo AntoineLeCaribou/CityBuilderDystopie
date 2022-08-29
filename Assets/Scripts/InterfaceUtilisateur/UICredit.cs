@@ -8,8 +8,13 @@ public class UICredit : MonoBehaviour
 {
     public Animator animateur;
 
+    private Credit credit;
+
     [SerializeField]
-    private GameObject parentFenetreCredit;
+    private GameObject parentFenetreLimiteCredit;
+    [SerializeField]
+    private GameObject parentFenetreFaireCredit;
+
 
     [SerializeField]
     private Slider sliderCapital;
@@ -44,6 +49,11 @@ public class UICredit : MonoBehaviour
     [SerializeField]
     private TMP_Text textBoutonSouscription;
 
+    private void Awake()
+    {
+        credit = GetComponent<Credit>();
+    }
+
     public void InitCapital(bool tuto, float capital, float min, float max)
     {
         sliderCapital.maxValue = max;
@@ -55,15 +65,15 @@ public class UICredit : MonoBehaviour
         else
             sliderCapital.interactable = true;
         
-        minCapital.SetText(min.ToString() + " €");
-        maxCapital.SetText(max.ToString() + " €");
-        finalCapital.SetText(capital.ToString() + " €");
+        minCapital.SetText(Utils.NombreToNombreAvecEspace(min.ToString()) + " €");
+        maxCapital.SetText(Utils.NombreToNombreAvecEspace(max.ToString()) + " €");
+        finalCapital.SetText(Utils.NombreToNombreAvecEspace(capital.ToString()) + " €");
     }
 
     public void UpdateFinalCapital()
     {
         float value = sliderCapital.value;
-        finalCapital.SetText(value.ToString() + " €");
+        finalCapital.SetText(Utils.NombreToNombreAvecEspace(value.ToString()) + " €");
     }
 
     public void InitMois(bool tuto, float duree, float min, float max)
@@ -77,48 +87,59 @@ public class UICredit : MonoBehaviour
         else
             sliderDuree.interactable = true;
         
-        minDuree.SetText(min.ToString() + " mois");
-        maxDuree.SetText(max.ToString() + " mois");
-        finalDuree.SetText(duree.ToString() + " mois");
+        minDuree.SetText(Utils.NombreToMoisEtAnnee(min));
+        maxDuree.SetText(Utils.NombreToMoisEtAnnee(max));
+        finalDuree.SetText(Utils.NombreToMoisEtAnnee(duree));
     }
 
     public void UpdateFinalDuree()
     {
         float value = sliderDuree.value;
-        finalDuree.SetText(value.ToString() + " mois");
+        finalDuree.SetText(Utils.NombreToMoisEtAnnee(value));
     }
 
     public void InitFraisDeDossier(float montant, float pourcentage)
     {
-        fraisDeDossier.SetText("Frais de dossier (<color=#FF6262>" + pourcentage.ToString() + "%</color> de l'emprunt) : <color=#FF6262>" + montant.ToString() + " €");
+        fraisDeDossier.SetText("Frais de dossier (<color=#FF6262>" + pourcentage.ToString() + "%</color> de l'emprunt) : <color=#FF6262>" + Utils.NombreToNombreAvecEspace(montant.ToString()) + " €");
     }
 
     public void InitPourcentageSupplementaire(float montant, float pourcentage)
     {
-        supplement.SetText("Supplément à rembourser (<color=#FF6262>" + pourcentage.ToString() + "%</color> de l'emprunt) : <color=#FF6262>" + montant.ToString() + " €");
+        supplement.SetText("Supplément à rembourser (<color=#FF6262>" + pourcentage.ToString() + "%</color> de l'emprunt) : <color=#FF6262>" + Utils.NombreToNombreAvecEspace(montant.ToString()) + " €");
     }
 
     public void InitRemboursement(float total, float parMois)
     {
-        remboursementTotal.SetText("Montant total à rembourser : <color=#FF6262>" + total.ToString() + " €");
-        remboursementParMois.SetText("Somme à rembourser / mois : <color=#FF6262>" + parMois.ToString() + " €");
+        remboursementTotal.SetText("Montant total à rembourser : <color=#FF6262>" + Utils.NombreToNombreAvecEspace(total.ToString()) + " €");
+        remboursementParMois.SetText("Somme à rembourser / mois : <color=#FF6262>" + Utils.NombreToNombreAvecEspace(parMois.ToString()) + " €");
     }
 
     public void InitBoutonSouscription(float montant, bool PasPossible)
     {
-        textBoutonSouscription.SetText("Souscrire\n" + montant.ToString() + " €");
+        textBoutonSouscription.SetText("Souscrire\n[<color=#FF6262>" + Utils.NombreToNombreAvecEspace(montant.ToString()) + " €</color>]");
         textBoutonSouscription.transform.parent.GetComponent<Button>().interactable = !PasPossible;
     }
 
     public void OuvrirFenetreCredit()
     {
-        //parentFenetreCredit.SetActive(true);
         animateur.SetBool("Ouverture", true);
+        credit.VerifierSiTropDeCredits();
+    }
+
+    public void SetLimiteCredit()
+    {
+        parentFenetreFaireCredit.SetActive(false);
+        parentFenetreLimiteCredit.SetActive(true);
+    }
+
+    public void SetFenetreFaireUnCredit()
+    {
+        parentFenetreFaireCredit.SetActive(true);
+        parentFenetreLimiteCredit.SetActive(false);
     }
 
     public void FermerFenetreCredit()
     {
-        //parentFenetreCredit.SetActive(false);
         animateur.SetBool("Ouverture", false);
     }
 

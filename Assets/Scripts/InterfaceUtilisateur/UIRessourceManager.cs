@@ -17,6 +17,12 @@ public class UIRessourceManager : MonoBehaviour
 
     public void UpdateCompteurArgent(float argent)
     {
+        if (argent < 0)
+        {
+            textArgent.SetText("<color=#FF6262>" + argent.ToString() + " €");
+            return;
+        }
+
         textArgent.SetText(argent.ToString() + " €");
     }
 

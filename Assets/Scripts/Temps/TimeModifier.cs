@@ -5,6 +5,10 @@ using TMPro;
 
 public class TimeModifier : MonoBehaviour
 {
+    public UIBoutonsVitesseDefilement boutonsDeDefilement;
+
+    private bool passageAuMoisProchainEnCours;
+
     private int heureLever;
     private int minuteLever;
 
@@ -17,7 +21,6 @@ public class TimeModifier : MonoBehaviour
     private int heureActuelle;
     private int minuteActuelle;
 
-    private int jour;
     private int mois;
 
     private int[,] leverDesMois;
@@ -26,6 +29,7 @@ public class TimeModifier : MonoBehaviour
 
     [Header("Références")]
     public TMP_Text textAMettreAJour;
+    public TMP_Text moisAMettreAJour;
     public Light lumiereDirectionnelle;
     public Camera cam;
 
@@ -47,8 +51,8 @@ public class TimeModifier : MonoBehaviour
     private int tempsZenith;
     private int tempsLever;
     private int tempsCoucher;
-    private int tempsZenithLunaire;
-    private int tempsZenithLunaireApresMinuit;
+
+    private string[] moisDeLAnnee = { "Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin", "Juillet", "Aout", "Septembre", "Octobre", "Novembre", "Decembre" };
 
     private bool premierJour;
 
@@ -56,8 +60,9 @@ public class TimeModifier : MonoBehaviour
     public float _interval = 0.1f;
 
     // Start is called before the first frame update
-    void Awake()
+    void Start()
     {
+
         cam.backgroundColor = nuit;
         premierJour = true;
         _time = 0f;
@@ -144,8 +149,9 @@ public class TimeModifier : MonoBehaviour
 
     private void Init()
     {
-        mois = 8;
-        ProchainJour();
+        mois = 7; //mois n°2 = fevrier
+        ResetHeure();
+        ProchaineMinute();
     }
 
     private void ResetHeure()
@@ -153,8 +159,9 @@ public class TimeModifier : MonoBehaviour
         if (premierJour)
         {
             heureActuelle = 8;
-            minuteActuelle = 0;
+            minuteActuelle = 59;
             premierJour = false;
+            passageAuMoisProchainEnCours = false;
         }
 
         heureLever = leverDesMois[mois - 1, 0];
@@ -169,10 +176,6 @@ public class TimeModifier : MonoBehaviour
         tempsZenith = heureZenith * 60 + minuteZenith;
         tempsLever = heureLever * 60 + minuteLever;
         tempsCoucher = heureCoucher * 60 + minuteCoucher;
-        tempsZenithLunaire = tempsCoucher + (tempsLever + (24 * 60 - tempsCoucher)) / 2;
-        tempsZenithLunaireApresMinuit = tempsZenithLunaire - (24 * 60);
-
-        tempsZenithLunaire = 24 * 60; //minuit
     }
 
     private void ProchaineMinute()
@@ -182,88 +185,85 @@ public class TimeModifier : MonoBehaviour
         {
             minuteActuelle = 0;
             heureActuelle++;
+            
+            if (passageAuMoisProchainEnCours && heureActuelle == 10)
+            {
+                passageAuMoisProchainEnCours = false;
+                boutonsDeDefilement.ReactiverBoutons();
+                boutonsDeDefilement.ActiverBoutons(1);
+            }
         }
 
-        UpdateTempsDuReveil();
         UpdateLuminosite();
         UpdateAngleLumiere();
         UpdateColorCamera();
 
-
         if (heureActuelle == 24)
         {
+            passageAuMoisProchainEnCours = true;
+
+            boutonsDeDefilement.DesactiverBoutons();
+            boutonsDeDefilement.ActiverBoutons(3);
+
             heureActuelle = 0;
-            ProchainJour();
+            ProchainMois();
         }
+
+        UpdateTempsDuReveil();
     }
 
-    private void ProchainJour()
+    private void ProchainMois()
     {
-        jour++;
-        if (jour == 31)
-        {
-            jour = 1;
-            mois++;
-        }
+        mois++;
 
         if (mois == 13)
-        {
             mois = 1;
-        }
 
         lumiereDirectionnelle.transform.rotation = Quaternion.Euler(new Vector3(50, -140, 0));
-
+        
         ResetHeure(); //On recupere l'heure de lever et celle de coucher
+        /*
+        boutonsDeDefilement.DesactiverBoutons();
+        boutonsDeDefilement.ActiverBoutons(2);
+        passageAuMoisProchainEnCours = true;
+        */
+    }
+
+    public string GetMoisDeLAnnee()
+    {
+        return moisDeLAnnee[mois-1];
     }
 
     private void UpdateTempsDuReveil()
     {
         textAMettreAJour.SetText(this.ToString());
+        moisAMettreAJour.SetText(GetMoisDeLAnnee());
     }
 
     private void UpdateLuminosite()
     {
         float intensite = 0;
-        float pourcentage = 0;
-
         int tempsActuel = heureActuelle * 60 + minuteActuelle;
 
+        //si on est avant le zenith
+        if (tempsActuel < tempsZenith - 120)
+        {
+            float pourcent = (tempsActuel - tempsLever) / (float)(tempsZenith - 120 - tempsLever);
+            intensite = intensiteMaxSoleil * pourcent;
+        }
+        //sinon, si on est après
+        else if (tempsActuel > tempsZenith + 120)
+        {
+            float pourcent = 1- ((tempsActuel - (tempsZenith + 120)) / (float)(tempsCoucher - (tempsZenith + 120)));
+            intensite = intensiteMaxSoleil * pourcent;
+        }
+        else
+        {
+            intensite = intensiteMaxSoleil;
+        }
 
-        //si on est après le coucher et avant le zenith lunaire (après minuit)
-        if (tempsActuel < tempsZenithLunaireApresMinuit)
-        {
-            //On calcule le pourcentage (entre 0.5f et 1.0f)
-            pourcentage = (tempsActuel - tempsZenithLunaire) / (float)(tempsZenithLunaireApresMinuit - tempsZenithLunaire) ;
-            intensite = Mathf.Clamp(pourcentage * intensiteMaxLune, 0.1f, intensiteMaxLune);
-        }
-        //sinon, si on est après le zenith lunaire et avant le lever
-        else if (tempsActuel < tempsLever)
-        {
-            //On calcule le pourcentage (entre 1.0f et 0.0f)
-            pourcentage = Mathf.Abs((tempsActuel - tempsZenithLunaireApresMinuit) / (float)(tempsLever - tempsZenithLunaireApresMinuit) - 1);
-            intensite = Mathf.Clamp(pourcentage * intensiteMaxLune, 0.1f, intensiteMaxLune);
-        }
-        //sinon, si on est avant le zenith
-        else if (tempsActuel < tempsZenith)
-        {
-            //On calcule le pourcentage (entre 0.0f et 1.0f)
-            pourcentage = (tempsActuel - tempsLever) / (float)(tempsZenith - tempsLever);
-            intensite = Mathf.Clamp(pourcentage * intensiteMaxSoleil, 0.1f, intensiteMaxSoleil);
-        }
-        //sinon, si on est après le zenith et avant le coucher
-        else if (tempsActuel < tempsCoucher)
-        {
-            //On calcule le pourcentage (entre 1.0f et 0.0f)
-            pourcentage = Mathf.Abs((tempsActuel - tempsZenith) / (float)(tempsCoucher - tempsZenith) - 1);
-            intensite = Mathf.Clamp(pourcentage * intensiteMaxSoleil, 0.1f, intensiteMaxSoleil);
-        }
-        //sinon, si on est après le coucher et avant le zenith lunaire (avant minuit)
-        else if (tempsActuel < tempsZenithLunaire)
-        {
-            //On calcule le pourcentage (entre 0.0f et 0.5f)
-            pourcentage = (tempsActuel - tempsCoucher) / (float)(tempsZenithLunaire - tempsCoucher);
-            intensite = Mathf.Clamp(pourcentage * intensiteMaxLune, 0.1f, intensiteMaxLune);
-        }
+        if (intensite < 0.1f)
+            intensite = 0.1f;
 
         lumiereDirectionnelle.intensity = intensite;
     }
@@ -274,41 +274,8 @@ public class TimeModifier : MonoBehaviour
         int tempsActuel = heureActuelle * 60 + minuteActuelle;
         Vector3 vecteur = Vector3.zero;
 
-        //si on est après le coucher et avant le zenith lunaire (après minuit)
-        if (tempsActuel < tempsZenithLunaireApresMinuit)
-        {
-            //On calcule le pourcentage (entre 0.5f et 1.0f)
-            division = (tempsActuel) / (float)(tempsZenithLunaireApresMinuit);
-            vecteur = Vector3.Lerp(new Vector3(50, -140, 0), new Vector3(50, -180, 0), division);
-        }
-        //sinon, si on est après le zenith lunaire et avant le lever
-        else if (tempsActuel < tempsLever)
-        {
-            //On calcule le pourcentage (entre 1.0f et 0.0f)
-            division = (tempsActuel - tempsZenithLunaireApresMinuit) / (float)(tempsLever - tempsZenithLunaireApresMinuit);
-            vecteur = Vector3.Lerp(new Vector3(50, -180, 0), new Vector3(50, -270, 0), division);
-        }
-        //sinon, si on est avant le zenith
-        else if (tempsActuel < tempsZenith)
-        {
-            //On calcule le pourcentage (entre 1.0 et 0.0f)
-            division = (tempsActuel - tempsLever) / (float)(tempsZenith - tempsLever);
-            vecteur = Vector3.Lerp(new Vector3(50, -270, 0), new Vector3(50, -360, 0), division);
-        }
-        //sinon, si on est entre le zenith et le coucher
-        else if (tempsActuel < tempsCoucher)
-        {
-            //On calcule le pourcentage (entre 0.0 et 1.0f)
-            division = (tempsActuel - tempsZenith) / (float)(tempsCoucher - tempsZenith);
-            vecteur = Vector3.Lerp(new Vector3(50, -360, 0), new Vector3(50, -450, 0), division);
-        }
-        //sinon, si on est après le coucher et avant le zenith lunaire (avant minuit)
-        else if (tempsActuel < tempsZenithLunaire)
-        {
-            //On calcule le pourcentage (entre 0.0 et 1.0f)
-            division = (tempsActuel - tempsCoucher) / (float)(tempsZenithLunaire - tempsCoucher);
-            vecteur = Vector3.Lerp(new Vector3(50, -450, 0), new Vector3(50, -500, 0), division);
-        }
+        division = tempsActuel / (float)(24*60);
+        vecteur = Vector3.Lerp(new Vector3(50, -160, 0), new Vector3(50, -520, 0), division);
 
         lumiereDirectionnelle.transform.rotation = Quaternion.Euler(vecteur);
     }
@@ -318,13 +285,13 @@ public class TimeModifier : MonoBehaviour
         int tempsActuel = heureActuelle * 60 + minuteActuelle;
 
         //si on est avant le zenith
-        if (tempsActuel < tempsZenith )
+        if (tempsActuel < tempsZenith - 120)
         {
             float division = (tempsActuel - tempsLever) / (float)(tempsZenith - tempsLever);
             cam.backgroundColor = Color.Lerp(nuit, zenith, division);
         }
         //sinon, si on est après
-        else
+        else if (tempsActuel > tempsZenith + 120)
         {
             float division = (tempsActuel - tempsZenith) / (float)(tempsCoucher - tempsZenith);
             cam.backgroundColor = Color.Lerp(zenith, nuit, division);
