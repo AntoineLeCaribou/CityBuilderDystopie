@@ -6,6 +6,7 @@ using TMPro;
 public class TimeModifier : MonoBehaviour
 {
     public UIBoutonsVitesseDefilement boutonsDeDefilement;
+    public UISaisons uiSaisons;
 
     private bool passageAuMoisProchainEnCours;
 
@@ -22,6 +23,7 @@ public class TimeModifier : MonoBehaviour
     private int minuteActuelle;
 
     private int mois;
+    private int saison;
 
     private int[,] leverDesMois;
     private int[,] coucherDesMois;
@@ -52,7 +54,8 @@ public class TimeModifier : MonoBehaviour
     private int tempsLever;
     private int tempsCoucher;
 
-    private string[] moisDeLAnnee = { "Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin", "Juillet", "Aout", "Septembre", "Octobre", "Novembre", "Decembre" };
+    private readonly string[] moisDeLAnnee = { "Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin", "Juillet", "Aout", "Septembre", "Octobre", "Novembre", "Decembre" };
+    private readonly string[] saisonDeLAnnee = { "Hiver", "Printemps", "Été", "Automne" };
 
     private bool premierJour;
 
@@ -149,7 +152,9 @@ public class TimeModifier : MonoBehaviour
 
     private void Init()
     {
-        mois = 7; //mois n°2 = fevrier
+        mois = 4; //mois n°4 = avril
+        CalculerNouvelleSaison(true);
+        uiSaisons.MettreAJourUISaisons(saisonDeLAnnee[saison]);
         ResetHeure();
         ProchaineMinute();
     }
@@ -219,14 +224,30 @@ public class TimeModifier : MonoBehaviour
         if (mois == 13)
             mois = 1;
 
+        CalculerNouvelleSaison();
+
         lumiereDirectionnelle.transform.rotation = Quaternion.Euler(new Vector3(50, -140, 0));
         
         ResetHeure(); //On recupere l'heure de lever et celle de coucher
-        /*
-        boutonsDeDefilement.DesactiverBoutons();
-        boutonsDeDefilement.ActiverBoutons(2);
-        passageAuMoisProchainEnCours = true;
-        */
+    }
+
+    private void CalculerNouvelleSaison(bool onlycalcul = false)
+    {
+        int ancienneSaison = saison;
+
+        if (mois <= 3)
+            saison = 0;
+        else if (mois <= 6)
+            saison = 1;
+        else if (mois <= 9)
+            saison = 2;
+        else
+            saison = 3;
+
+        if (!onlycalcul && saison != ancienneSaison)
+        {
+            uiSaisons.JouerAnimation(saisonDeLAnnee[ancienneSaison], saisonDeLAnnee[saison]);
+        }
     }
 
     public string GetMoisDeLAnnee()
@@ -254,7 +275,7 @@ public class TimeModifier : MonoBehaviour
         //sinon, si on est après
         else if (tempsActuel > tempsZenith + 120)
         {
-            float pourcent = 1- ((tempsActuel - (tempsZenith + 120)) / (float)(tempsCoucher - (tempsZenith + 120)));
+            float pourcent = 1 - ((tempsActuel - (tempsZenith + 120)) / (float)(tempsCoucher - (tempsZenith + 120)));
             intensite = intensiteMaxSoleil * pourcent;
         }
         else

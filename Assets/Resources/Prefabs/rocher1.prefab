@@ -9,6 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4409643581705630328}
+  - component: {fileID: 249750845022133831}
+  - component: {fileID: 7591237930824346155}
   m_Layer: 0
   m_Name: rocher1
   m_TagString: Untagged
@@ -33,6 +35,37 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &249750845022133831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2038100885802478561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a35e7b1dd9e9b4f4e820424004473f0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nomDeLobjet: Petit rocher
+  id: 7
+  couleurDeLobjet: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  prixDeLobjet: 60
+  placableSurTelID: 0
+--- !u!114 &7591237930824346155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2038100885802478561}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93cf08d0a462eb446b8b08e62e86e107, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prixDeDestruction: 60
+  rotationnable: 1
 --- !u!1 &8336339231421455754
 GameObject:
   m_ObjectHideFlags: 0

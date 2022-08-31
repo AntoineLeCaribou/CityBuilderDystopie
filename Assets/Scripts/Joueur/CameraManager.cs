@@ -53,10 +53,16 @@ public class CameraManager : MonoBehaviour
 
         float vitesseDeScroll = scrollSpeed;
         float vitesseDeVol = flySpeed;
+
         if (Input.GetKey(KeyCode.LeftShift))
         {
             vitesseDeVol *= 2;
             vitesseDeScroll *= 2;
+        }
+        if (Input.GetKey(KeyCode.LeftAlt))
+        {
+            vitesseDeVol /= 2;
+            vitesseDeScroll /= 2;
         }
 
         Vector3 mouvementTouches = transform.right * axeX * vitesseDeVol + transform.forward * (axeY * vitesseDeVol + axeMolette * vitesseDeScroll);

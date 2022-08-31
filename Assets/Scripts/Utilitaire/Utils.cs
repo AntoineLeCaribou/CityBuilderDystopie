@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class Utils
 {
-
     public static Vector3 GetMousePositionIn3DWorld(out bool isUi)
     {
         isUi = EventSystem.current.IsPointerOverGameObject();
@@ -78,6 +77,31 @@ public class Utils
                 return "1 an et " + moisEnPlus + " mois";
 
             return nbAnnee + " ans et " + moisEnPlus + " mois";
+        }
+    }
+
+    public static Material[] ChangerMaterialsDesEnfants(GameObject objet, Material nouveauMaterial)
+    {
+        int nbElement = objet.transform.childCount;
+
+        Material[] liste = new Material[nbElement];
+
+        for (int i = 0; i < nbElement; i++)
+        {
+            liste[i] = objet.transform.GetChild(i).GetComponent<MeshRenderer>().material;
+            objet.transform.GetChild(i).GetComponent<MeshRenderer>().material = nouveauMaterial;
+        }
+
+        return liste;
+    }
+
+    public static void RendreMaterialsAuxEnfants(GameObject objet, Material[] materiaux)
+    {
+        int nbElement = objet.transform.childCount;
+
+        for (int i = 0; i < nbElement; i++)
+        {
+            objet.transform.GetChild(i).GetComponent<MeshRenderer>().material = materiaux[i];
         }
     }
 }

@@ -4,14 +4,19 @@ using UnityEngine;
 
 public class GridBuildingSystem : MonoBehaviour
 {
+    private Outil outil;
+
+    public RessourceManager ressourceManager;
+
     private Grid grid;
 
     public int largeur = 20;
     public int hauteur = 20;
-    public int valeurEnCache;
-    public string nomEnCache;
     public float tailleCellule = 20f;
-    public Color couleurGrille = Color.white;
+
+    private int idEnCache;
+    private string nomEnCache;
+    private float prixEnCache;
 
     public Transform parentCellules = null;
     public Transform parentLignes = null;
@@ -23,27 +28,45 @@ public class GridBuildingSystem : MonoBehaviour
     public Material materialObjetNonPlacable;
 
     public GameObject objetAPlacer;
-    public GameObject ObjetDansLaMain;
+    public GameObject objetDansLaMain;
 
     public Vector3 vecteurDecalageCamera;
     public Vector3 offsetBatimentCase;
 
+    private Vector3 offsetMain = new(0f, 0.05f, 0f);
+
     private void Awake()
     {
         Encyclopedie.Init();
+        MaterialGetter.Init();
+
         grid = new Grid(largeur, hauteur, tailleCellule, parentCellules);
         grid = TerrainGenerator.GenererTerrain(grid, largeur, hauteur, this);
+
         DessinerGrille();
-        SetPrefabAPlacer(objetAPlacer, 1, "arbre");
+        SetPrefabAPlacer(objetAPlacer, 1, "arbre", 999);
     }
 
-    public void SetPrefabAPlacer(GameObject objet, int valeur, string nom)
+    public void SetOutil(Outil outil)
+    {
+        //On active le trigger de supression de l'outil
+        if (this.outil != null)
+            this.outil.OnDelete(this.objetDansLaMain);
+
+        this.outil = outil;
+    }
+
+    public void SetPrefabAPlacer(GameObject objet, int id, string nom, float prix)
     {
         this.objetAPlacer = objet;
-        Destroy(this.ObjetDansLaMain);
-        this.ObjetDansLaMain = Instantiate(objet, Vector3.zero, Quaternion.identity);
-        this.valeurEnCache = valeur;
+        Destroy(this.objetDansLaMain);
+        this.objetDansLaMain = Instantiate(objet, Vector3.zero + offsetMain, Quaternion.identity);
+
+        this.idEnCache = id;
         this.nomEnCache = nom;
+        this.prixEnCache = prix;
+
+        this.objetDansLaMain.SetActive(false);
     }
 
     private void Update()
@@ -54,87 +77,27 @@ public class GridBuildingSystem : MonoBehaviour
         if (isUI)
             return;
 
-        int valeurCaseTouchee = grid.GetValue(positionDeLaSourisDansLeMonde3D);
+        int idCaseTouchee = grid.GetValue(positionDeLaSourisDansLeMonde3D);
 
-        //Si on n'a rien touché dans le monde 3d
-        if (valeurCaseTouchee == -1)
+        //si on vise le vide
+        if (idCaseTouchee == -1)
         {
-            this.ObjetDansLaMain.gameObject.SetActive(false);
+            outil.EstDansLeVide(objetDansLaMain);
             return;
         }
 
-        ////On a touché à une case !
-        this.ObjetDansLaMain.gameObject.SetActive(true);
-        this.ObjetDansLaMain.transform.position = grid.GetCoords(positionDeLaSourisDansLeMonde3D);
+        //donc on vise le terrain
+        outil.EstSurLeTerrain(objetDansLaMain, grid, positionDeLaSourisDansLeMonde3D, idCaseTouchee, ressourceManager);
 
-        //Si la case est constructible
-        if (valeurCaseTouchee == 0)
+        //si on clic gauche
+        if (Input.GetMouseButtonDown(0))
         {
-            for (int i = 0; i < this.ObjetDansLaMain.transform.childCount; i++)
-            {
-                this.ObjetDansLaMain.transform.GetChild(i).GetComponent<MeshRenderer>().material = materialObjetPlacable;
-            }
+            outil.UtilisationPrincipale(objetDansLaMain, this, grid, positionDeLaSourisDansLeMonde3D, idCaseTouchee, ressourceManager);
         }
-        //Sinon, si la case est déjà prise
-        else
-        {
-            for (int i = 0; i < this.ObjetDansLaMain.transform.childCount; i++)
-            {
-                this.ObjetDansLaMain.transform.GetChild(i).GetComponent<MeshRenderer>().material = materialObjetNonPlacable;
-            }
-        }
-
-        //On veut construire
-        if (Input.GetMouseButton(0))
-        {
-            //Si la case est constructible
-            if (valeurCaseTouchee == 0)
-            {
-                Vector2Int pos = Placer(objetAPlacer, positionDeLaSourisDansLeMonde3D, valeurEnCache, nomEnCache);
-                TerrainGenerator.RefreshSol(grid, pos.x, pos.y, largeur, hauteur, this);
-
-                SupprimerSol(pos.x - 1, pos.y);
-                SupprimerSol(pos.x + 1, pos.y);
-                SupprimerSol(pos.x, pos.y - 1);
-                SupprimerSol(pos.x, pos.y + 1);
-
-                TerrainGenerator.RefreshSol(grid, pos.x - 1, pos.y, largeur, hauteur, this);
-                TerrainGenerator.RefreshSol(grid, pos.x + 1, pos.y, largeur, hauteur, this);
-                TerrainGenerator.RefreshSol(grid, pos.x, pos.y - 1, largeur, hauteur, this);
-                TerrainGenerator.RefreshSol(grid, pos.x, pos.y + 1, largeur, hauteur, this);
-            }
-            //Sinon, si la case est déjà prise
-            else
-            {
-                Debug.Log("Impossible de construire ici ...");
-            }
-        }
-
-        if (Input.GetKey(KeyCode.E))
-        {
-            Retirer(positionDeLaSourisDansLeMonde3D);
-        }
-
+        //si on appuie sur la touche R
         if (Input.GetKeyDown(KeyCode.R))
         {
-            //Si la case est occupée
-            if (valeurCaseTouchee == 1)
-            {
-                //On tourne l'objet que l'on regarde
-                GameObject objet = grid.GetObject(positionDeLaSourisDansLeMonde3D);
-                Vector3 rotation = objet.transform.rotation.eulerAngles;
-                rotation += new Vector3(0, 90, 0);
-                objet.transform.rotation = Quaternion.Euler(rotation);
-            }
-            //Sinon, si la case est vide
-            else
-            {
-                //On tourne l'objet de la main
-                GameObject objet = this.ObjetDansLaMain;
-                Vector3 rotation = objet.transform.rotation.eulerAngles;
-                rotation += new Vector3(0, 90, 0);
-                objet.transform.rotation = Quaternion.Euler(rotation);
-            }
+            outil.UtilisationSecondaire(objetDansLaMain);
         }
     }
 
@@ -149,7 +112,7 @@ public class GridBuildingSystem : MonoBehaviour
 
     public Vector2Int Placer(GameObject objet, int x, int y, int valeur, string nom = "vide", bool rotaRandom = false)
     {
-        Quaternion rotation = this.ObjetDansLaMain.transform.rotation;
+        Quaternion rotation = this.objetDansLaMain.transform.rotation;
         if (rotaRandom)
             rotation = GetRandomRotation();
 
@@ -175,7 +138,7 @@ public class GridBuildingSystem : MonoBehaviour
         }
     }
 
-    private void SupprimerSol(int x, int y)
+    public void SupprimerSol(int x, int y)
     {
         if (x < 0 || y < 0 || x >= largeur || y >= hauteur)
             return;
@@ -192,8 +155,8 @@ public class GridBuildingSystem : MonoBehaviour
 
     private Quaternion GetRandomRotation()
     {
-        int nbAleatoire = Random.Range(0, 359+1);
-        return Quaternion.Euler(new Vector3(0, nbAleatoire, 0));
+        int nbAleatoire = Random.Range(0, 3+1);
+        return Quaternion.Euler(new Vector3(0, nbAleatoire*90, 0));
     }
 
     public void Retirer(Vector3 position)

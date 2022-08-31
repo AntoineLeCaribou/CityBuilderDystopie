@@ -9,6 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8294026017967523241}
+  - component: {fileID: 4309745055666455998}
+  - component: {fileID: 4329152086337237773}
   m_Layer: 0
   m_Name: routeDeBase
   m_TagString: Untagged
@@ -33,6 +35,37 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4309745055666455998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5935944644499217456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a35e7b1dd9e9b4f4e820424004473f0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nomDeLobjet: Route
+  id: 9
+  couleurDeLobjet: {r: 0.2924528, g: 0.2924528, b: 0.2924528, a: 1}
+  prixDeLobjet: 5000
+  placableSurTelID: 0
+--- !u!114 &4329152086337237773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5935944644499217456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93cf08d0a462eb446b8b08e62e86e107, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prixDeDestruction: 1000
+  rotationnable: 0
 --- !u!1 &7065880363480708895
 GameObject:
   m_ObjectHideFlags: 0

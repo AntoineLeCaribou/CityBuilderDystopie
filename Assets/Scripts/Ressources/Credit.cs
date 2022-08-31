@@ -8,7 +8,7 @@ public class Credit : MonoBehaviour
     private UICredit uiCredit;
     public RessourceManager ressourceManager;
 
-    private float minimumCredit = 1000;
+    private float minimumCredit = 10000;
     private float maximumCredit = 1000000;
     private float capital = 100000;
 

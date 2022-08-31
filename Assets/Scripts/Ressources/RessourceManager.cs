@@ -5,6 +5,7 @@ using UnityEngine;
 public class RessourceManager : MonoBehaviour
 {
     public UIRessourceManager uiRessourceManager;
+    public UIBatimentItem uiBatimentItem;
 
     private float argent;
     private int habitants;
@@ -26,13 +27,14 @@ public class RessourceManager : MonoBehaviour
     {
         this.argent += argent;
         uiRessourceManager.UpdateCompteurArgent(this.argent);
+        uiBatimentItem.RefreshPrixBoutons();
     }
 
     public void RetirerArgent(float argent)
     {
         this.argent -= argent;
-
         uiRessourceManager.UpdateCompteurArgent(this.argent);
+        uiBatimentItem.RefreshPrixBoutons();
     }
 
     public void AjouterHabitant(int habitants)
